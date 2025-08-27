@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import argparse
 
-from . import __version__
-
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the base argument parser for aio_celery CLI."""
