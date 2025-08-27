@@ -304,6 +304,8 @@ async def on_message_received(
         if app.conf.enable_sentry_sdk and sentry_sdk is not None:
             stack.enter_context(sentry_sdk.Hub(sentry_sdk.Hub.current))
 
+        task_id = "unknown"
+        task_name = "unknown"
         try:
             task_id = str(message.headers["id"])
             task_name = str(message.headers["task"])
