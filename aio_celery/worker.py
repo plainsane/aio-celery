@@ -304,15 +304,15 @@ async def on_message_received(
         if app.conf.enable_sentry_sdk and sentry_sdk is not None:
             stack.enter_context(sentry_sdk.Hub(sentry_sdk.Hub.current))
 
-        task_id = str(message.headers["id"])
-        task_name = str(message.headers["task"])
-
-        CURRENT_ROOT_ID.set(cast("Optional[str]", message.headers["root_id"]))
-        CURRENT_TASK_ID.set(task_id)
-
-        logger.info("Task %s[%s] received", task_name, task_id)
-
         try:
+            task_id = str(message.headers["id"])
+            task_name = str(message.headers["task"])
+
+            CURRENT_ROOT_ID.set(cast("Optional[str]", message.headers["root_id"]))
+            CURRENT_TASK_ID.set(task_id)
+
+            logger.info("Task %s[%s] received", task_name, task_id)
+
             async with message.process(ignore_processed=True):
                 try:
                     annotated_task = app.get_annotated_task(task_name)
