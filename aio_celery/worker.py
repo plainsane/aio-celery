@@ -313,12 +313,12 @@ async def on_message_received(
         logger.info("Task %s[%s] received", task_name, task_id)
 
         try:
-            async with message.process(ignore_processed=True, requeue=True):
+            async with message.process(ignore_processed=True):
                 try:
                     annotated_task = app.get_annotated_task(task_name)
                 except KeyError:
                     _log_unregistered_task(message)
-                    await message.reject()
+                    await message.reject(requeue=False)
                     return
 
                 task = Task(
