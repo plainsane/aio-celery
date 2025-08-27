@@ -19,12 +19,16 @@ class Broker:
         task_queue_max_priority: int | None,
         broker_publish_timeout: float | None,
         publishing_channel: AbstractRobustChannel,
+        dead_letter_exchange: str | None = None,
+        consumer_ack_timeout: int | None = None,
     ) -> None:
         self._broker_url = broker_url
         self._task_queue_max_priority: int | None = task_queue_max_priority
         self._already_declared_queues: set[str] = set()
         self._broker_publish_timeout = broker_publish_timeout
         self._publishing_channel = publishing_channel
+        self._dead_letter_exchange = dead_letter_exchange
+        self._consumer_ack_timeout = consumer_ack_timeout
 
     async def publish_message(
         self,
@@ -36,6 +40,8 @@ class Broker:
             await self.declare_queue(
                 queue_name=routing_key,
                 channel=self._publishing_channel,
+                dlx=self._dead_letter_exchange,
+                ack_timeout=self._consumer_ack_timeout,
             )
 
         await self._publishing_channel.default_exchange.publish(
@@ -49,16 +55,26 @@ class Broker:
         *,
         queue_name: str,
         channel: AbstractRobustChannel,
+        dlx: str | None = None,
+        ack_timeout: int | None = None,
     ) -> AbstractQueue:
-        arguments: Arguments
+        arguments: Arguments = {}
+        
         if self._task_queue_max_priority is not None:
-            arguments = {"x-max-priority": self._task_queue_max_priority}
-        else:
-            arguments = None
+            arguments["x-max-priority"] = self._task_queue_max_priority
+            
+        if dlx is not None:
+            arguments["x-dead-letter-exchange"] = dlx
+            arguments["x-dead-letter-routing-key"] = f"{queue_name}.dead_letter"
+            
+        if ack_timeout is not None:
+            # Convert seconds to milliseconds for x-consumer-timeout
+            arguments["x-consumer-timeout"] = ack_timeout * 1000
+            
         queue = await channel.declare_queue(
             name=queue_name,
             durable=True,
-            arguments=arguments,
+            arguments=arguments if arguments else None,
             timeout=self._broker_publish_timeout,
         )
         self._already_declared_queues.add(queue_name)

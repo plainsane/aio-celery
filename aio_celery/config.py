@@ -53,6 +53,11 @@ class DefaultConfig:
         hours=1,
     )
 
+    # Dead Letter Exchange and Consumer Timeout
+    dead_letter_exchange: str | None = None
+    dead_letter_routing_key_suffix: str = ".dead_letter"
+    consumer_ack_timeout: int | None = None
+
     def update(self, **options: int | bool | str | float | datetime.timedelta | None) -> None:
         fields = {f.name for f in dataclasses.fields(self.__class__)}
         for k, v in options.items():

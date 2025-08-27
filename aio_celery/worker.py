@@ -466,6 +466,13 @@ async def run(args: argparse.Namespace) -> None:
         )
     logging.getLogger("aio_celery").setLevel(level=logging.getLevelName(args.loglevel))
     app = _find_app_instance(args.app)
+    
+    # Update app configuration with CLI args
+    if hasattr(args, 'dlx') and args.dlx is not None:
+        app.conf.dead_letter_exchange = args.dlx
+    if hasattr(args, 'ack_timeout') and args.ack_timeout is not None:
+        app.conf.consumer_ack_timeout = args.ack_timeout
+        
     if not args.queues:
         queue_names = [app.conf.task_default_queue]
     else:

@@ -92,6 +92,8 @@ class Celery:
                 broker_publish_timeout=self.conf.broker_publish_timeout,
                 task_queue_max_priority=self.conf.task_queue_max_priority,
                 publishing_channel=cast("AbstractRobustChannel", publishing_channel),
+                dead_letter_exchange=self.conf.dead_letter_exchange,
+                consumer_ack_timeout=self.conf.consumer_ack_timeout,
             )
             set_current_app(self)
             try:
