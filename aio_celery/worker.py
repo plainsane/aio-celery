@@ -380,6 +380,7 @@ async def on_message_received(
                 task_name,
                 task_id,
             )
+            await message.reject(requeue=False)
         finally:
             _STATE.amount_of_tasks_completed_after_last_gc_run += 1
             with contextlib.suppress(KeyError):
