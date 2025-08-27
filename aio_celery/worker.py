@@ -458,14 +458,15 @@ def _print_intro(
     print(f"[tasks]\n{t}\n")  # noqa: T201
 
 
-async def run(args: argparse.Namespace) -> None:
+async def run(args: argparse.Namespace, app: Optional[Celery] = None) -> None:
     if args.configure_logging:
         logging.basicConfig(
             level=logging.getLevelName(args.loglevel),
             format="[%(asctime)s][%(name)s][%(levelname)s] %(message)s",
         )
     logging.getLogger("aio_celery").setLevel(level=logging.getLevelName(args.loglevel))
-    app = _find_app_instance(args.app)
+    if app is None:
+        app = _find_app_instance(args.app)
     
     # Update app configuration with CLI args
     if hasattr(args, 'dlx') and args.dlx is not None:
