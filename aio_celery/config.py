@@ -28,6 +28,9 @@ class DefaultConfig:
     # Worker
     worker_consumer_tag_prefix: str = ""
     worker_prefetch_multiplier: int = 4
+    worker_mode: str = "push"  # "push" or "pull"
+    worker_poll_timeout: float = 1.0  # seconds to wait for messages in pull mode
+    worker_early_ack: bool = True  # whether to ACK messages before task completion
     # Raison d'être:
     # The asyncio.timeout() context manager is what transforms
     # the asyncio.CancelledError into a TimeoutError,
@@ -50,7 +53,7 @@ class DefaultConfig:
         hours=1,
     )
 
-    def update(self, **options: int | bool | str | datetime.timedelta | None) -> None:
+    def update(self, **options: int | bool | str | float | datetime.timedelta | None) -> None:
         fields = {f.name for f in dataclasses.fields(self.__class__)}
         for k, v in options.items():
             if k not in fields:
