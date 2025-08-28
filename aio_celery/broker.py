@@ -19,6 +19,8 @@ class Broker:
         task_queue_max_priority: int | None,
         broker_publish_timeout: float | None,
         publishing_channel: AbstractRobustChannel,
+        exchange_name: str,
+        routing_key: str,
         dead_letter_exchange: str | None = None,
         consumer_ack_timeout: int | None = None,
     ) -> None:
@@ -30,6 +32,9 @@ class Broker:
         self._dead_letter_exchange = dead_letter_exchange
         self._consumer_ack_timeout = consumer_ack_timeout
         self._is_client = False
+        self._exchange = None
+        self._exchange_name = exchange_name
+        self._routing_key = routing_key
 
     def set_client(self) -> None:
         self._is_client = True
@@ -64,7 +69,12 @@ class Broker:
         channel: AbstractRobustChannel,
     ) -> AbstractQueue:
         arguments: Arguments = {}
-        
+        if self._exchange is None:
+            self._exchange = await channel.declare_exchange(
+                self._exchange_name,
+                aio_pika.ExchangeType.DIRECT,
+                durable=True,
+            )
         if self._task_queue_max_priority is not None:
             arguments["x-max-priority"] = self._task_queue_max_priority
             
@@ -82,5 +92,6 @@ class Broker:
             arguments=arguments if arguments else None,
             timeout=self._broker_publish_timeout,
         )
+        await queue.bind(self._exchange, routing_key=self._routing_key)
         self._already_declared_queues.add(queue_name)
         return queue
