@@ -244,7 +244,6 @@ async def _execute_task(
     try:
         try:
             try:
-                logger.info(f"Task {task.name}[{task.request.id}] args: {args} kwargs: {task.request.kwargs}")
                 result = await _run_with_timeout(
                     annotated_task.fn(*args, **task.request.kwargs),
                     _get_soft_time_limit(task, annotated_task),
