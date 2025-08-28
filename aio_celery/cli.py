@@ -72,13 +72,4 @@ def create_worker_parser(parent_parser: argparse.ArgumentParser) -> argparse.Arg
         dest="configure_logging",
         help="Use this parameter if your application configures custom logging.",
     )
-    worker.add_argument(
-        "--dlx",
-        help="Dead letter exchange name to use for failed messages",
-    )
-    worker.add_argument(
-        "--ack-timeout",
-        type=int,
-        help="Consumer timeout in seconds for message acknowledgment",
-    )
     return parent_parser

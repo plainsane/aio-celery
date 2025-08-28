@@ -55,21 +55,19 @@ class Broker:
         *,
         queue_name: str,
         channel: AbstractRobustChannel,
-        dlx: str | None = None,
-        ack_timeout: int | None = None,
     ) -> AbstractQueue:
         arguments: Arguments = {}
         
         if self._task_queue_max_priority is not None:
             arguments["x-max-priority"] = self._task_queue_max_priority
             
-        if dlx is not None:
-            arguments["x-dead-letter-exchange"] = dlx
+        if self._dead_letter_exchange is not None:
+            arguments["x-dead-letter-exchange"] = self._dead_letter_exchange
             arguments["x-dead-letter-routing-key"] = f"{queue_name}.dead_letter"
             
-        if ack_timeout is not None:
+        if self._consumer_ack_timeout is not None:
             # Convert seconds to milliseconds for x-consumer-timeout
-            arguments["x-consumer-timeout"] = ack_timeout * 1000
+            arguments["x-consumer-timeout"] = self._consumer_ack_timeout * 1000
             
         queue = await channel.declare_queue(
             name=queue_name,
