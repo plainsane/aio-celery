@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+import aio_pika
 
 if TYPE_CHECKING:
-    import aio_pika
     from aio_pika.abc import (
         AbstractQueue,
         AbstractRobustChannel,
