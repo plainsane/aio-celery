@@ -244,6 +244,7 @@ async def _execute_task(
     try:
         try:
             try:
+                logger.info(f"Task {task.name}[{task.request.id}] args: {args} kwargs: {task.request.kwargs}")
                 result = await _run_with_timeout(
                     annotated_task.fn(*args, **task.request.kwargs),
                     _get_soft_time_limit(task, annotated_task),
@@ -263,6 +264,7 @@ async def _execute_task(
                     await task.retry()
                 raise
         except Retry as exc:
+            logger.info(f"Task {task.name}[{task.request.id}] retrying")
             await _handle_task_retry(
                 task=task,
                 annotated_task=annotated_task,
