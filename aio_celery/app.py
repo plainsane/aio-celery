@@ -94,6 +94,10 @@ class Celery:
                 publishing_channel=cast("AbstractRobustChannel", publishing_channel),
                 dead_letter_exchange=self.conf.dead_letter_exchange,
                 consumer_ack_timeout=self.conf.consumer_ack_timeout,
+                exchange_name=self.conf.exchange_name,
+                exchange_type=self.conf.exchange_type,
+                exchange_durable=self.conf.exchange_durable,
+                routing_key=self.conf.routing_key,
             )
             set_current_app(self)
             try:

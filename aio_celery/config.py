@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import datetime
 from dataclasses import dataclass
+import aio_pika
 
 
 @dataclass
@@ -57,6 +58,13 @@ class DefaultConfig:
     dead_letter_exchange: str | None = None
     dead_letter_routing_key_suffix: str = ".dead_letter"
     consumer_ack_timeout: int | None = None
+
+    # Exchange
+    exchange_name: str = "celery"
+    exchange_type: aio_pika.ExchangeType = aio_pika.ExchangeType.DIRECT
+    exchange_durable: bool = True
+    routing_key: str = "celery"
+
 
     def update(self, **options: int | bool | str | float | datetime.timedelta | None) -> None:
         fields = {f.name for f in dataclasses.fields(self.__class__)}
