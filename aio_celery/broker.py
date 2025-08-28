@@ -29,6 +29,10 @@ class Broker:
         self._publishing_channel = publishing_channel
         self._dead_letter_exchange = dead_letter_exchange
         self._consumer_ack_timeout = consumer_ack_timeout
+        self._is_client = False
+
+    def set_client(self) -> None:
+        self._is_client = True
 
     async def publish_message(
         self,
@@ -36,12 +40,10 @@ class Broker:
         *,
         routing_key: str,
     ) -> None:
-        if routing_key not in self._already_declared_queues:
+        if not self._is_client and routing_key not in self._already_declared_queues:
             await self.declare_queue(
                 queue_name=routing_key,
                 channel=self._publishing_channel,
-                dlx=self._dead_letter_exchange,
-                ack_timeout=self._consumer_ack_timeout,
             )
 
         await self._publishing_channel.default_exchange.publish(
