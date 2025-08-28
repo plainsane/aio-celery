@@ -547,6 +547,7 @@ async def run(args: argparse.Namespace, app: Optional[Celery] = None) -> None:
                         gc_is_paused=gc_is_paused,
                     ),
                     consumer_tag=consumer_tag,
+                    no_ack=True,
                     timeout=app.conf.broker_publish_timeout,
                 )
             logger.info("Waiting for messages. To exit press CTRL+C")
