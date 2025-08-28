@@ -5,7 +5,7 @@ import datetime
 import json
 import sys
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Optional, Tuple, cast, Dict
 
 if TYPE_CHECKING:
     from aio_pika import IncomingMessage, Message
@@ -28,13 +28,32 @@ class Request:
     timelimit: tuple[int | None, int | None]
     chain: list[dict[str, Any]]
 
+    @staticmethod
+    def get_undefined(payload: Dict[str, Any], key: str) -> Optional[str, float, int, Tuple, bool]:
+
+        if key in payload:
+            val = payload[key]
+            if isinstance(val, list) or isinstance(val, tuple):
+                new_val = []
+                for item in val:
+                    if item == "undefined":
+                        item = None
+                    new_val.append(item)
+                return tuple(new_val)
+            if val == "undefined":
+                return None
+            else:
+                return val
+        else:
+            return None
+
     @classmethod
     def from_message(cls: type[Request], message: IncomingMessage) -> Request:
         headers = message.headers
         args, kwargs, options = json.loads(message.body)
-        raw_eta = cast("Optional[str]", headers["eta"])
+        raw_eta = cast("Optional[str]", cls.get_undefined(headers,"eta"))
         eta: datetime.datetime | None
-        if raw_eta is not None and raw_eta != "undefined":
+        if raw_eta is not None:
             if sys.version_info >= (3, 11):
                 eta = datetime.datetime.fromisoformat(raw_eta)
             else:
@@ -56,7 +75,7 @@ class Request:
             group=cast("Optional[str]", headers["group"]),
             root_id=cast("str", headers["root_id"]),
             ignore_result=bool(headers["ignore_result"]),
-            timelimit=cast("Tuple[Optional[int], Optional[int]]", headers["timelimit"]),
+            timelimit=cast("Tuple[Optional[int], Optional[int]]", cls.get_undefined(headers,"timelimit")),
             chain=options["chain"],
         )
 
