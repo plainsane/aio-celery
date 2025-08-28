@@ -307,20 +307,23 @@ async def on_message_received(
         task_id = "unknown"
         task_name = "unknown"
         try:
-            task_id = str(message.headers["id"])
-            task_name = str(message.headers["task"])
-
-            CURRENT_ROOT_ID.set(cast("Optional[str]", message.headers["root_id"]))
-            CURRENT_TASK_ID.set(task_id)
-
-            logger.info("Task %s[%s] received", task_name, task_id)
 
             async with message.process(ignore_processed=True):
+                #this took a minute, requeue is false because if we explode here
+                #then we cant handle what came in so just reject it.
+                #if we make it out of here cleanly the message is acked,
+                #if not it is a reject with requeue false, (should hit dead letter exchange?)
+                task_id = str(message.headers["id"])
+                task_name = str(message.headers["task"])
+
+                CURRENT_ROOT_ID.set(cast("Optional[str]", message.headers["root_id"]))
+                CURRENT_TASK_ID.set(task_id)
+
+                logger.info("Task %s[%s] received", task_name, task_id)
                 try:
                     annotated_task = app.get_annotated_task(task_name)
                 except KeyError:
                     _log_unregistered_task(message)
-                    await message.reject(requeue=False)
                     return
 
                 task = Task(
@@ -382,7 +385,6 @@ async def on_message_received(
                 task_name,
                 task_id,
             )
-            await message.reject(requeue=False)
         finally:
             _STATE.amount_of_tasks_completed_after_last_gc_run += 1
             with contextlib.suppress(KeyError):
@@ -547,7 +549,6 @@ async def run(args: argparse.Namespace, app: Optional[Celery] = None) -> None:
                         gc_is_paused=gc_is_paused,
                     ),
                     consumer_tag=consumer_tag,
-                    no_ack=True,
                     timeout=app.conf.broker_publish_timeout,
                 )
             logger.info("Waiting for messages. To exit press CTRL+C")
