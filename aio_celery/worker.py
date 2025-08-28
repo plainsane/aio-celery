@@ -256,11 +256,20 @@ async def _execute_task(
                     isinstance(exc, asyncio.TimeoutError)
                     and app.conf.worker_retry_task_on_asyncio_timeout_error
                 ):
-                    logger.warning(
-                        "Task %s[%s] raised asyncio.TimeoutError, retrying...",
-                        task.name,
-                        task.request.id,
-                    )
+                    if isinstance(exc, asyncio.TimeoutError):
+                        logger.warning(
+                            "Task %s[%s] raised asyncio.TimeoutError, retrying...",
+                            task.name,
+                            task.request.id,
+                        )
+                    else:
+                        logger.warning(
+                            "Task %s[%s] raised %s, retrying... %s",
+                            task.name,
+                            task.request.id,
+                            type(exc).__name__,
+                            traceback.format_exc(),
+                        )
                     await task.retry()
                 raise
         except Retry as exc:
