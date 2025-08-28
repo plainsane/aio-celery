@@ -465,12 +465,12 @@ def _print_intro(
         inspect_http_server=inspect_http_server,
     ).splitlines()
     logger.info(  # noqa: T201
-        "╔═══════════════════════╗\n"
+        "\n╔═══════════════════════╗\n"
         "║ AsyncIO Celery Worker ║\n"
         "╚═══════════════════════╝\n",
     )
-    logger.info("\n".join(banner) + "\n")  # noqa: T201
-    logger.info(f"[tasks]\n{t}\n")  # noqa: T201
+    logger.info("\n" + "\n".join(banner) + "\n")  # noqa: T201
+    logger.info(f"\n[tasks]\n{t}\n")  # noqa: T201
 
 
 async def run(args: argparse.Namespace, app: Optional[Celery] = None) -> None:
