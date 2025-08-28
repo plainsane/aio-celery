@@ -34,7 +34,7 @@ class Request:
         args, kwargs, options = json.loads(message.body)
         raw_eta = cast("Optional[str]", headers["eta"])
         eta: datetime.datetime | None
-        if raw_eta is not None:
+        if raw_eta is not None and raw_eta != "undefined":
             if sys.version_info >= (3, 11):
                 eta = datetime.datetime.fromisoformat(raw_eta)
             else:
